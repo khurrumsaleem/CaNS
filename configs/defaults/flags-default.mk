@@ -7,7 +7,8 @@ endif
 ifeq ($(strip $(FCOMP)),NVIDIA)
 FFLAGS_MOD_DIR := -module # extra space
 ifeq ($(strip $(GPU)),1)
-override FFLAGS += -acc -cuda -Minfo=accel -gpu=cc60,cc70,cc80
+NVHPC_GPU_TARGET ?= ccall-major
+override FFLAGS += -acc -cuda -Minfo=accel -gpu=$(NVHPC_GPU_TARGET)
 endif
 endif
 ifeq ($(strip $(FCOMP)),CRAY)
@@ -143,5 +144,13 @@ endif
 else
 ifeq ($(strip $(FCOMP)),CRAY)
 override FFLAGS += -fno-openmp
+endif
+endif
+
+# CI artifacts may run on a different GitHub-hosted CPU model.
+# Allow CI to request a portable NVHPC target without changing native user builds.
+ifeq ($(strip $(FCOMP)),NVIDIA)
+ifneq ($(strip $(NVHPC_CPU_TARGET)),)
+override FFLAGS += -tp=$(NVHPC_CPU_TARGET)
 endif
 endif
